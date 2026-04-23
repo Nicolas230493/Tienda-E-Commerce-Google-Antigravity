@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mi Carrito - Impulso Shop Store{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12">
+    <h1 class="text-4xl font-black mb-10 italic border-l-4 border-cyan_primary pl-4 reveal active">TU CARRITO</h1>
+
+    {% if cart|length > 0 %}
+    <div class="flex flex-col lg:flex-row gap-10">
+        
+        <!-- Columna Izquierda: Lista de Productos -->
+        <div class="lg:w-2/3 space-y-6">
+            {% for item in cart %}
+            {% with product=item.product %}
+            <div class="reveal active bg-white dark:bg-dark_grey border border-slate-200 dark:border-white/5 rounded-3xl p-6 flex flex-col md:flex-row items-center gap-6 group hover:border-cyan_primary/30 transition-all shadow-xl">
+                <!-- Imagen -->
+                <div class="w-24 h-24 flex-shrink-0 overflow-hidden rounded-2xl">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                    {% else %}
+                    <div class="w-full h-full bg-slate-100 dark:bg-white/5 flex items-center justify-center">
+                        <i class="fas fa-image text-2xl opacity-10"></i>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Info -->
+                <div class="flex-grow">
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-cyan_primary mb-1">{{ product.name }}</h3>
+                    {% if item.variant %}
+                    <p class="text-sm text-slate-500 dark:text-silver_text mb-2 italic">Variante: {{ item.variant }}</p>
+                    {% endif %}
+                    <p class="text-lg font-black text-slate-900 dark:text-white">${{ item.price }}</p>
+                </div>
+
+                <!-- Selector de Cantidad -->
+                <div class="flex items-center bg-slate-100 dark:bg-obsidian rounded-2xl p-1 border border-slate-200 dark:border-white/10">
+                    <form action="{% url 'cart:cart_add' product.id %}" method="post" class="flex items-center">
+                        {% csrf_token %}
+                        <input type="hidden" name="override" value="True">
+                        <input type="hidden" name="variant_id" value="{{ item.variant_id|default:'' }}">
+                        
+                        <button type="submit" name="quantity" value="{{ item.quantity|add:-1 }}" 
+                                class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white dark:hover:bg-white/5 transition-colors {% if item.quantity <= 1 %}opacity-30 pointer-events-none{% endif %}">
+                            <i class="fas fa-minus text-xs text-slate-400"></i>
+                        </button>
+                        
+                        <span class="w-12 text-center font-bold text-lg dark:text-white">{{ item.quantity }}</span>
+                        
+                        <button type="submit" name="quantity" value="{{ item.quantity|add:1 }}" 
+                                class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white dark:hover:bg-white/5 transition-colors">
+                            <i class="fas fa-plus text-xs text-slate-400"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Subtotal y Eliminar -->
+                <div class="text-right flex md:flex-col items-center md:items-end justify-between md:justify-center gap-4 min-w-[120px]">
+                    <p class="text-xl font-black text-blue-600 dark:text-cyan_primary">${{ item.total_price }}</p>
+                    <form action="{% url 'cart:cart_remove' product.id %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="variant_id" value="{{ item.variant_id|default:'' }}">
+                        <button type="submit" class="text-slate-400 hover:text-red-500 transition-colors p-2">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endwith %}
+            {% endfor %}
+
+            <div class="pt-6">
+                <a href="{% url 'catalog:product_list' %}" class="inline-flex items-center text-slate-500 dark:text-silver_text hover:text-cyan_primary transition-colors font-bold">
+                    <i class="fas fa-chevron-left mr-2"></i> SEGUIR COMPRANDO
+                </a>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Order Summary -->
+        <div class="lg:w-1/3">
+            <div class="sticky top-24 bg-slate-900 dark:bg-dark_grey border border-white/10 rounded-3xl p-8 shadow-2xl reveal active delay-300">
+                <h2 class="text-2xl font-black mb-8 border-b border-white/10 pb-4 text-white">RESUMEN DEL PEDIDO</h2>
+                
+                <div class="space-y-4 mb-8">
+                    <div class="flex justify-between text-silver_text">
+                        <span>Subtotal</span>
+                        <span class="font-bold text-white">${{ cart.get_total_price }}</span>
+                    </div>
+                    
+                    <div>
+                        <label class="text-xs font-bold text-silver_text uppercase tracking-widest block mb-3">Método de Envío</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="shipping" value="5.00" data-method="bicycle" class="hidden peer" checked>
+                                <div class="p-3 text-center border border-white/10 rounded-xl peer-checked:border-cyan_primary peer-checked:bg-cyan_primary/10 transition-all">
+                                    <i class="fas fa-bicycle mb-1 block peer-checked:text-cyan_primary"></i>
+                                    <span class="text-[10px] font-bold block text-silver_text peer-checked:text-white uppercase">Bicicleta</span>
+                                    <span class="text-xs font-black text-cyan_primary">$5.00</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer group">
+                                <input type="radio" name="shipping" value="12.00" data-method="motorcycle" class="hidden peer">
+                                <div class="p-3 text-center border border-white/10 rounded-xl peer-checked:border-cyan_primary peer-checked:bg-cyan_primary/10 transition-all">
+                                    <i class="fas fa-motorcycle mb-1 block peer-checked:text-cyan_primary"></i>
+                                    <span class="text-[10px] font-bold block text-silver_text peer-checked:text-white uppercase">Moto</span>
+                                    <span class="text-xs font-black text-cyan_primary">$12.00</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-white/10 pt-6 mb-8">
+                    <div class="flex justify-between items-end">
+                        <span class="text-lg font-bold text-white">TOTAL</span>
+                        <div class="text-right">
+                            <span id="cart-total" class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan_primary to-blue-500">
+                                ${{ cart.get_total_price|add:5 }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="{% url 'orders:order_create' %}" 
+                   class="w-full inline-block text-center py-5 bg-gradient-to-r from-cyan_primary to-blue-600 text-obsidian font-black rounded-2xl shadow-[0_0_20px_rgba(0,242,255,0.3)] hover:shadow-cyan_primary/60 hover:scale-[1.02] active:scale-95 transition-all">
+                    PROCEDER AL PAGO <i class="fas fa-lock ml-2 text-xs"></i>
+                </a>
+
+                <div class="mt-6 flex justify-center space-x-4 opacity-30">
+                    <i class="fab fa-cc-visa text-2xl"></i>
+                    <i class="fab fa-cc-mastercard text-2xl"></i>
+                    <i class="fab fa-cc-stripe text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="reveal active py-24 text-center border-2 border-dashed border-slate-200 dark:border-white/10 rounded-3xl">
+        <div class="w-20 h-20 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i class="fas fa-shopping-basket text-3xl text-slate-300"></i>
+        </div>
+        <h2 class="text-2xl font-bold mb-4">Tu carrito está vacío</h2>
+        <p class="text-slate-500 dark:text-silver_text mb-8 max-w-xs mx-auto">Parece que aún no has añadido ningún producto tecnológico a tu selección.</p>
+        <a href="{% url 'catalog:product_list' %}" class="inline-block bg-blue-600 dark:bg-cyan_primary text-white dark:text-obsidian font-black px-10 py-4 rounded-xl hover:scale-105 transition-all">
+            VOLVER A LA TIENDA
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    // Lógica dinámica para el total del carrito según envío
+    const shippingRadios = document.querySelectorAll('input[name="shipping"]');
+    const totalDisplay = document.getElementById('cart-total');
+    const subtotal = parseFloat("{{ cart.get_total_price }}");
+
+    shippingRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            const shippingCost = parseFloat(this.value);
+            const total = subtotal + shippingCost;
+            totalDisplay.innerText = `$${total.toFixed(2)}`;
+            
+            // Opcional: Guardar preferencia en localStorage para el checkout
+            localStorage.setItem('preferred_shipping_method', this.dataset.method);
+            localStorage.setItem('preferred_shipping_cost', this.value);
+        });
+    });
+</script>
+{% endblock %}

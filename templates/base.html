@@ -1,0 +1,118 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Impulso Shop{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        obsidian: '#0a0a0a',
+                        cyan_primary: '#00f2ff', // Para elementos decorativos
+                        cyan_accessible: '#0891b2', // Cyan-600 para texto en modo claro
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        // Prevenir parpadeo (Flicker)
+        (function() {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
+    <style>
+        .reveal { opacity: 0; transform: translateY(20px); transition: all 0.6s ease-out; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        body { transition: background-color 0.3s ease, color 0.3s ease; }
+    </style>
+</head>
+<body class="bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col antialiased">
+
+    <!-- Navbar Accesible -->
+    <nav class="border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="{% url 'core:home' %}" class="text-2xl font-black tracking-tighter italic uppercase text-slate-900 dark:text-white">
+                IMPULSO <span class="text-cyan-600 dark:text-cyan-400">SHOP</span>
+            </a>
+            
+            <div class="flex items-center space-x-5">
+                <a href="{% url 'catalog:product_list' %}" class="hidden md:block font-medium hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">Catálogo</a>
+                
+                <!-- Toggle de Tema -->
+                <button id="theme-toggle" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all">
+                    <i id="theme-toggle-light-icon" class="fas fa-sun hidden dark:block"></i>
+                    <i id="theme-toggle-dark-icon" class="fas fa-moon block dark:hidden"></i>
+                </button>
+
+                <!-- Carrito -->
+                <a href="{% url 'cart:cart_detail' %}" class="relative p-2 text-slate-700 dark:text-slate-200 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
+                    <i class="fas fa-shopping-basket text-xl"></i>
+                    {% if cart|length > 0 %}
+                    <span class="absolute top-0 right-0 bg-cyan-600 dark:bg-cyan-400 text-white dark:text-slate-950 text-[10px] px-1.5 rounded-full font-bold shadow-sm">
+                        {{ cart|length }}
+                    </span>
+                    {% endif %}
+                </a>
+
+                {% if user.is_authenticated %}
+                    <div class="flex items-center space-x-4 border-l border-slate-200 dark:border-slate-800 pl-5">
+                        <span class="text-sm font-bold hidden sm:inline">{{ user.username }}</span>
+                        <form action="{% url 'accounts:logout' %}" method="post" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="text-xs font-bold text-red-500 hover:text-red-600 uppercase tracking-tighter">Salir</button>
+                        </form>
+                    </div>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}" class="text-sm font-bold border-l border-slate-200 dark:border-slate-800 pl-5 hover:text-cyan-600 dark:hover:text-cyan-400">LOGIN</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 py-12">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-slate-500 dark:text-slate-500 text-xs font-medium tracking-widest uppercase">
+                © 2026 - <span class="text-slate-900 dark:text-slate-300 font-bold">Impulso Digital Sgo</span> - Todos los Derechos Reservados.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Lógica de Revelado
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('active');
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // Lógica de Tema
+        const btn = document.getElementById('theme-toggle');
+        btn.addEventListener('click', () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Administración{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Panel de Control</h1>
+
+    <div class="row g-4">
+        <!-- Tarjetas de Resumen -->
+        <div class="col-md-4">
+            <div class="card text-white bg-primary h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Ventas Totales</h5>
+                    <p class="card-text fs-2">${{ total_sales|default:"0.00" }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Pedidos Totales</h5>
+                    <p class="card-text fs-2">{{ total_orders_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-warning h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-dark">Productos Activos</h5>
+                    <p class="card-text fs-2 text-dark">{{ active_products_count }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <h3>Últimos Pedidos</h3>
+            <ul class="list-group">
+                {% for order in recent_orders %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Pedido #{{ order.id }} - {{ order.user.username }}
+                    <span class="badge bg-primary rounded-pill">${{ order.total_amount }}</span>
+                </li>
+                {% empty %}
+                <li class="list-group-item">No hay pedidos recientes.</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <h3>Acciones Rápidas</h3>
+            <div class="d-grid gap-2">
+                <a href="{% url 'admin:index' %}" class="btn btn-dark btn-lg">Ir al Admin Django</a>
+                <a href="{% url 'catalog:product_list' %}" class="btn btn-outline-secondary">Ver Catálogo</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Registro - Impulso Shop Store{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-24 flex justify-center items-center">
+    <div class="w-full max-w-xl reveal active">
+        <div class="bg-dark_grey border border-white/5 rounded-[40px] p-10 shadow-2xl relative overflow-hidden">
+            <!-- Decoración -->
+            <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-600/5 rounded-full blur-3xl"></div>
+            
+            <div class="text-center mb-10">
+                <h1 class="text-4xl font-black italic mb-2 tracking-tighter text-white">ÚNETE A LA <span class="text-cyan_primary">RED</span></h1>
+                <p class="text-silver_text text-sm">Forma parte de la nueva era digital.</p>
+            </div>
+
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% for field in user_form %}
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-silver_text uppercase tracking-widest ml-2">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                            {% for error in field.errors %}
+                                <p class="text-red-500 text-[10px] ml-2">{{ error }}</p>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="pt-4">
+                    <button type="submit" class="w-full py-5 bg-gradient-to-r from-cyan_primary to-blue-600 text-obsidian font-black rounded-2xl shadow-xl hover:scale-[1.02] transition-all">
+                        CREAR CUENTA ALPHA
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-8 text-center">
+                <p class="text-silver_text text-sm">
+                    ¿Ya eres miembro? <a href="{% url 'accounts:login' %}" class="text-cyan_primary font-bold hover:underline">Inicia Sesión</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    input {
+        width: 100%;
+        background-color: #0a0a0a;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 1rem;
+        padding: 0.875rem 1.25rem;
+        color: white;
+        outline: none;
+        transition: all 0.3s;
+    }
+    input:focus {
+        border-color: #00f2ff;
+        box-shadow: 0 0 0 2px rgba(0, 242, 255, 0.1);
+    }
+</style>
+{% endblock %}

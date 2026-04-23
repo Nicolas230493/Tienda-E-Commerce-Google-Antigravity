@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Mis Pedidos - Impulso Shop{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 reveal active gap-6">
+        <div>
+            <h1 class="text-4xl font-black italic tracking-tighter border-l-4 border-cyan-600 dark:border-cyan-400 pl-4 text-slate-900 dark:text-white">
+                HISTORIAL DE PEDIDOS
+            </h1>
+            <p class="text-slate-600 dark:text-slate-400 mt-2 font-medium">Seguimiento de tus adquisiciones en Impulso Shop.</p>
+        </div>
+        <div class="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-6 py-3 shadow-sm">
+            <span class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-widest">Total Pedidos:</span>
+            <span class="ml-2 text-cyan-700 dark:text-cyan-400 font-black text-lg">{{ orders.count }}</span>
+        </div>
+    </div>
+
+    {% if orders %}
+    <div class="reveal active delay-200">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2rem] overflow-hidden shadow-xl">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 dark:bg-slate-950/50 border-b border-slate-200 dark:border-slate-800">
+                            <th class="px-8 py-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">ID Pedido</th>
+                            <th class="px-8 py-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Fecha</th>
+                            <th class="px-8 py-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Estado</th>
+                            <th class="px-8 py-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Transporte</th>
+                            <th class="px-8 py-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-right">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                        {% for order in orders %}
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-950/30 transition-colors">
+                            <td class="px-8 py-6">
+                                <span class="text-slate-900 dark:text-white font-mono font-bold">#{{ order.id }}</span>
+                            </td>
+                            <td class="px-8 py-6">
+                                <span class="text-slate-600 dark:text-slate-400 text-sm font-medium">{{ order.created|date:"d M, Y" }}</span>
+                            </td>
+                            <td class="px-8 py-6">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider
+                                    {% if order.status == 'paid' or order.status == 'delivered' %}
+                                        bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400
+                                    {% elif order.status == 'cancelled' %}
+                                        bg-rose-100 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400
+                                    {% else %}
+                                        bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400
+                                    {% endif %}">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="px-8 py-6">
+                                <div class="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                                    {% if order.shipping_method == 'bicycle' %}
+                                        <i class="fas fa-bicycle text-xs"></i>
+                                    {% else %}
+                                        <i class="fas fa-motorcycle text-xs"></i>
+                                    {% endif %}
+                                    <span class="text-xs font-bold uppercase tracking-tight">{{ order.get_shipping_method_display }}</span>
+                                </div>
+                            </td>
+                            <td class="px-8 py-6 text-right">
+                                <span class="text-lg font-black text-cyan-700 dark:text-cyan-400">${{ order.total_amount }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="reveal active py-24 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[3rem] bg-slate-50 dark:bg-transparent">
+        <div class="w-16 h-16 bg-white dark:bg-slate-900 shadow-sm rounded-full flex items-center justify-center mx-auto mb-6">
+            <i class="fas fa-clipboard-list text-2xl text-slate-300 dark:text-slate-700"></i>
+        </div>
+        <p class="text-slate-500 dark:text-slate-500 font-medium italic">Aún no has realizado pedidos.</p>
+        <a href="{% url 'catalog:product_list' %}" class="inline-block mt-6 text-cyan-600 dark:text-cyan-400 font-bold hover:underline italic uppercase text-sm tracking-widest transition-all">
+            Comenzar a comprar <i class="fas fa-arrow-right ml-1"></i>
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

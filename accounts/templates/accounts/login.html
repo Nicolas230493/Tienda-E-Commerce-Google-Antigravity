@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Impulso Shop Store{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-24 flex justify-center items-center">
+    <div class="w-full max-w-md reveal active">
+        <div class="bg-dark_grey border border-white/5 rounded-[40px] p-10 shadow-2xl relative overflow-hidden group">
+            <!-- Decoración de fondo -->
+            <div class="absolute -top-24 -right-24 w-48 h-48 bg-cyan_primary/5 rounded-full blur-3xl"></div>
+            
+            <div class="text-center mb-10">
+                <h1 class="text-4xl font-black italic mb-2 tracking-tighter">ACCESO <span class="text-cyan_primary">ALPHA</span></h1>
+                <p class="text-silver_text text-sm">Ingresa tus credenciales para continuar.</p>
+            </div>
+
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-silver_text uppercase tracking-widest ml-2">Usuario</label>
+                    <div class="relative">
+                        <i class="fas fa-user absolute left-5 top-1/2 -translate-y-1/2 text-cyan_primary/50 text-xs"></i>
+                        <input type="text" name="username" required class="w-full bg-obsidian border border-white/10 rounded-2xl pl-12 pr-6 py-4 text-white focus:ring-2 ring-cyan_primary outline-none transition-all">
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-silver_text uppercase tracking-widest ml-2">Contraseña</label>
+                    <div class="relative">
+                        <i class="fas fa-lock absolute left-5 top-1/2 -translate-y-1/2 text-cyan_primary/50 text-xs"></i>
+                        <input type="password" name="password" required class="w-full bg-obsidian border border-white/10 rounded-2xl pl-12 pr-6 py-4 text-white focus:ring-2 ring-cyan_primary outline-none transition-all">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-5 bg-gradient-to-r from-cyan_primary to-blue-600 text-obsidian font-black rounded-2xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all">
+                    INICIAR SESIÓN
+                </button>
+            </form>
+
+            <div class="mt-8 text-center">
+                <p class="text-silver_text text-sm">
+                    ¿No tienes una cuenta? <a href="{% url 'accounts:register' %}" class="text-cyan_primary font-bold hover:underline">Registrate aquí</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
