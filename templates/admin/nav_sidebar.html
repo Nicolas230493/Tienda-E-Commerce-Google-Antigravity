@@ -1,0 +1,47 @@
+{% extends "admin/nav_sidebar.html" %}
+{% load i18n %}
+
+{% block nav_sidebar %}
+<div id="nav-filter">
+    <!-- Mantenemos el filtro original si existe -->
+    {{ block.super }}
+</div>
+
+<div class="impulso-admin-section" style="margin-top: 20px; border-top: 1px solid #444; padding-top: 15px;">
+    <div class="app-catalog module">
+        <table>
+            <caption>
+                <a href="#" class="section" title="Gestión Avanzada">IMPULSO DIGITAL SGO</a>
+            </caption>
+            <tbody>
+                <tr class="model-dashboard">
+                    <th scope="row">
+                        <a href="{% url 'catalog:dashboard_products' %}" style="display: flex; align-items: center; gap: 10px; color: #22d3ee; font-weight: bold;">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M1 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V4zM1 9a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V9zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V9z"/>
+                            </svg>
+                            DASHBOARD PRO
+                        </a>
+                    </th>
+                    <td><a href="{% url 'catalog:dashboard_product_create' %}" class="addlink">{% translate 'Add' %}</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .impulso-admin-section .app-catalog caption a {
+        color: #94a3b8 !important;
+        font-size: 11px !important;
+        letter-spacing: 1.5px;
+    }
+    .model-dashboard:hover {
+        background: rgba(34, 211, 238, 0.1) !important;
+    }
+    .model-dashboard a:hover {
+        color: #fff !important;
+        text-shadow: 0 0 10px rgba(34, 211, 238, 0.8);
+    }
+</style>
+{% endblock %}

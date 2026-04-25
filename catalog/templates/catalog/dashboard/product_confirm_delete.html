@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-[#0f172a] flex items-center justify-center p-6">
+    <div class="max-w-md w-full bg-slate-900 border border-slate-800 p-10 rounded-[2.5rem] shadow-2xl text-center">
+        <div class="w-20 h-20 bg-red-500/10 text-red-500 rounded-3xl flex items-center justify-center mx-auto mb-6">
+            <i class="fas fa-exclamation-triangle text-3xl"></i>
+        </div>
+        
+        <h1 class="text-2xl font-black text-white mb-2 italic uppercase tracking-tighter">¿Confirmar Eliminación?</h1>
+        <p class="text-slate-400 mb-8">Estás a punto de borrar permanentemente <span class="text-white font-bold">"{{ product.name }}"</span>. Esta acción no se puede deshacer.</p>
+
+        <form method="post" class="space-y-3">
+            {% csrf_token %}
+            <button type="submit" class="w-full py-4 bg-red-500 text-white font-black rounded-2xl hover:bg-red-600 transition-all uppercase tracking-widest text-sm">
+                Sí, Eliminar Producto
+            </button>
+            <a href="{% url 'catalog:dashboard_products' %}" class="w-full block py-4 bg-slate-800 text-slate-400 font-bold rounded-2xl hover:bg-slate-700 transition-all uppercase tracking-widest text-sm">
+                Cancelar y Volver
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

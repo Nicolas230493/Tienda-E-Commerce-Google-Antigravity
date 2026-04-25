@@ -1,8 +1,11 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Q
+from django.db.models import Q, Sum
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib import messages
 from .models import Category, Product, Review
-from .forms import ReviewForm
+from .forms import ReviewForm, ProductForm
 from cart.forms import CartAddProductForm
+from orders.models import Order
 
 def product_list(request, category_slug=None):
     category = None
@@ -84,3 +87,90 @@ def product_detail(request, id, slug):
         'review_form': review_form,
         'variants': variants
     })
+
+# --- Staff Dashboard Views ---
+
+@staff_member_required
+def dashboard_products(request):
+    products = Product.objects.all().select_related('category').order_by('-created')
+    
+    # Métricas
+    stats = {
+        'total_products': products.count(),
+        'low_stock': products.filter(stock__lte=5).count(),
+        'active_now': products.filter(active=True).count(),
+        'monthly_sales': Order.objects.filter(paid=True).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+    }
+    
+    return render(request, 'catalog/dashboard/product_list.html', {
+        'products': products,
+        'stats': stats
+    })
+
+@staff_member_required
+def dashboard_product_create(request):
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save(commit=False)
+            from django.utils.text import slugify
+            product.slug = slugify(product.name)
+            product.save()
+            messages.success(request, f'¡Producto "{product.name}" creado con éxito!')
+            return redirect('catalog:dashboard_products')
+    else:
+        form = ProductForm()
+    
+    return render(request, 'catalog/dashboard/product_form.html', {
+        'form': form,
+        'title': 'Crear Nuevo Producto'
+    })
+
+@staff_member_required
+def dashboard_product_edit(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Producto "{product.name}" actualizado.')
+            return redirect('catalog:dashboard_products')
+    else:
+        form = ProductForm(instance=product)
+    
+    return render(request, 'catalog/dashboard/product_form.html', {
+        'form': form,
+        'product': product,
+        'title': f'Editando: {product.name}'
+    })
+
+from django.db import transaction
+
+@staff_member_required
+def dashboard_product_delete(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    if request.method == 'POST':
+        # Implementación de Soft Delete
+        product.is_deleted = True
+        product.active = False
+        product.save()
+        messages.warning(request, f'Producto "{product.name}" marcado como eliminado (Soft Delete).')
+        return redirect('catalog:dashboard_products')
+    return render(request, 'catalog/dashboard/product_confirm_delete.html', {'product': product})
+
+# Función auxiliar para manejo de stock seguro (Race Conditions)
+@transaction.atomic
+def update_product_stock_safe(product_id, quantity_to_reduce):
+    """
+    Bloquea la fila del producto en la DB hasta que se complete la transacción.
+    Evita que dos procesos descuenten stock simultáneamente.
+    """
+    try:
+        product = Product.objects.select_for_update().get(id=product_id)
+        if product.stock >= quantity_to_reduce:
+            product.stock -= quantity_to_reduce
+            product.save()
+            return True
+        return False
+    except Product.DoesNotExist:
+        return False

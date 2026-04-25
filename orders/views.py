@@ -17,27 +17,38 @@ def order_create(request):
             if request.user.is_authenticated:
                 order.user = request.user
             
-            # --- Lógica de Negocio (Impuestos) ---
-            # El shipping_method ya viene del formulario validado
-            if order.shipping_method == 'bicycle':
-                order.shipping_cost = 5.00
-            else:
-                order.shipping_cost = 12.00
+            # --- Lógica de Negocio (Logística) ---
+            from django.conf import settings
+            order.shipping_cost = settings.SHIPPING_COSTS.get(order.shipping_method, 0.00)
             
             # Calculo simple de impuestos (ej. 21% del subtotal)
             subtotal = cart.get_total_price()
             order.tax_amount = round(float(subtotal) * 0.21, 2)
             
-            order.save()
-            
-            for item in cart:
-                OrderItem.objects.create(
-                    order=order,
-                    product=item['product'],
-                    variant=item['variant'], # Ahora guardamos la variante
-                    price=item['price'],
-                    quantity=item['quantity']
-                )
+            from django.db import transaction
+            try:
+                with transaction.atomic():
+                    order.save()
+                    for item in cart:
+                        # Validación final de stock
+                        product = item['product']
+                        variant = item['variant']
+                        quantity = item['quantity']
+                        
+                        available_stock = variant.stock if variant else product.stock
+                        if quantity > available_stock:
+                            raise ValueError(f"El producto {product.name} se ha agotado o no tiene suficiente stock.")
+
+                        OrderItem.objects.create(
+                            order=order,
+                            product=product,
+                            variant=variant,
+                            price=item['price'],
+                            quantity=quantity
+                        )
+            except ValueError as e:
+                form.add_error(None, str(e))
+                return render(request, 'orders/create.html', {'cart': cart, 'form': form})
             
             # Limpiar carrito
             cart.clear()

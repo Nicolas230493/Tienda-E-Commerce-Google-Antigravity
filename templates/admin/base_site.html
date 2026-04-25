@@ -1,0 +1,41 @@
+{% extends "admin/base_site.html" %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    #nav-sidebar .impulso-sidebar-link {
+        display: flex;
+        align-items: center;
+        padding: 12px 15px;
+        background: rgba(34, 211, 238, 0.05);
+        border-left: 4px solid #22d3ee;
+        margin: 10px 0;
+        color: #22d3ee !important;
+        font-weight: bold;
+        text-decoration: none;
+        font-size: 13px;
+        transition: background 0.2s;
+    }
+    #nav-sidebar .impulso-sidebar-link:hover {
+        background: rgba(34, 211, 238, 0.15);
+    }
+    #nav-sidebar .impulso-sidebar-link svg {
+        margin-right: 10px;
+        width: 18px;
+        height: 18px;
+        fill: currentColor;
+    }
+</style>
+{% endblock %}
+
+{% block nav_sidebar %}
+    {{ block.super }}
+    <div id="impulso-custom-nav" style="padding: 0 5px;">
+        <a href="{% url 'catalog:dashboard_products' %}" class="impulso-sidebar-link">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+            </svg>
+            Dashboard Avanzado
+        </a>
+    </div>
+{% endblock %}

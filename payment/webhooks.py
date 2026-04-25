@@ -30,6 +30,7 @@ def stripe_webhook(request):
                 order.paid = True
                 order.payment_id = session.payment_intent
                 order.payment_status = 'paid'
+                order.deduct_stock() # Descontar inventario aquí
                 order.save()
             except Order.DoesNotExist:
                 return HttpResponse(status=404)

@@ -47,18 +47,25 @@ class Cart:
             self._sync_db()
 
     def _sync_db(self):
-        # NOTE: Sync logic simplificada. En producción real, esto debería ser más robusto (upserts).
-        # Aquí borramos y recreamos para evitar complejidad de diffing en este mvp.
-        CartModel.objects.filter(user=self.user).delete()
-        cart_model = CartModel.objects.create(user=self.user)
+        # Aseguramos que el carrito base exista
+        cart_model, created = CartModel.objects.get_or_create(user=self.user)
+        
+        # Obtenemos los IDs de los items que están actualmente en la sesión
+        current_item_keys = []
         
         for item in self.cart.values():
-            CartItem.objects.create(
+            product_id = int(item['product_id'])
+            # Nota: El modelo CartItem actual no soporta variantes en BD según la auditoría.
+            # Implementamos el update_or_create sobre el product_id.
+            cart_item, created = CartItem.objects.update_or_create(
                 cart=cart_model,
-                product_id=int(item['product_id']),
-                # variant_id=item['variant_id'], # TODO: update cart model to support variants
-                quantity=item['quantity']
+                product_id=product_id,
+                defaults={'quantity': item['quantity']}
             )
+            current_item_keys.append(cart_item.id)
+            
+        # Limpiamos los items que ya no están en el carrito de la sesión
+        CartItem.objects.filter(cart=cart_model).exclude(id__in=current_item_keys).delete()
 
     def remove(self, product_id, variant_id=None):
         cart_key = str(product_id)

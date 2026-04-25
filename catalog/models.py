@@ -50,15 +50,16 @@ class Category(models.Model):
 
 
 class Product(models.Model):
-    category = models.ForeignKey(Category, related_name='products', on_delete=models.CASCADE, verbose_name="Categoría")
-    name = models.CharField(max_length=255, verbose_name="Nombre")
+    category = models.ForeignKey(Category, related_name='products', on_delete=models.CASCADE, verbose_name="Categoría", db_index=True)
+    name = models.CharField(max_length=255, verbose_name="Nombre", db_index=True)
     slug = models.SlugField(max_length=255, unique=True, verbose_name="Slug")
     description = models.TextField(blank=True, verbose_name="Descripción")
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Precio")
     discount_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name="Precio con descuento")
     stock = models.PositiveIntegerField(default=0, verbose_name="Stock")
     sku = models.CharField(max_length=50, unique=True, verbose_name="SKU")
-    active = models.BooleanField(default=True, verbose_name="Activo")
+    active = models.BooleanField(default=True, verbose_name="Activo", db_index=True)
+    is_deleted = models.BooleanField(default=False, verbose_name="Eliminado", db_index=True)
     image = models.ImageField(upload_to='products/%Y/%m/%d', blank=True, verbose_name="Imagen Principal")
     
     # Inventario

@@ -94,6 +94,32 @@ class Order(models.Model):
     def get_total_cost(self):
         return sum(item.get_cost() for item in self.items.all()) + self.shipping_cost + self.tax_amount
 
+    def deduct_stock(self):
+        """
+        Descuenta el stock de los productos/variantes de forma atómica.
+        """
+        from django.db import transaction
+        from django.db.models import F
+
+        with transaction.atomic():
+            for item in self.items.all():
+                if item.variant:
+                    # Bloqueamos la fila de la variante para evitar ventas simultáneas
+                    variant = ProductVariant.objects.select_for_update().get(id=item.variant.id)
+                    if variant.stock >= item.quantity:
+                        variant.stock = F('stock') - item.quantity
+                        variant.save()
+                    else:
+                        raise ValueError(f"Stock insuficiente para la variante {variant}")
+                else:
+                    # Bloqueamos la fila del producto
+                    product = Product.objects.select_for_update().get(id=item.product.id)
+                    if product.stock >= item.quantity:
+                        product.stock = F('stock') - item.quantity
+                        product.save()
+                    else:
+                        raise ValueError(f"Stock insuficiente para el producto {product}")
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
